@@ -20,7 +20,7 @@ Domain owns all intelligence & integration . Edge provides client access to doma
 
 <execution-rules>
 ALWAYS EXECTUE:
-- Scratchpad: Check liminal-chat/agent-management/agent-scratchpad/claude/current/ before starting work
+- Scratchpad: Check agent-management/agent-scratchpad/claude/current/ before starting work
 - File Discipline: Read files before editing
 - Task Updates: Update todos immediately upon task completion
 - Collaberate: Stop and ask when struggling or uncertain
@@ -73,7 +73,7 @@ Core testing principles:
 
 <information-hierarchy>
 ## Information Hierarchy
-1. /Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/claude/current/ - Active working memory
+1. agent-management/agent-scratchpad/claude/current/ - Active working memory
 2. docs/project-status.md - Current implementation state
 3. Quick Reference Index - Specific knowledge domains
 4. Never trust memory over source documents
@@ -125,7 +125,7 @@ Core testing principles:
 <qa-workflow>
 ### Argus QA Handoff Protocol
 **Context**: Integration with Argus QA agent for quality validation workflow  
-**Location**: Argus reports saved to `/Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/argus-qa-reports/latest.md`
+**Location**: Argus reports saved to `agent-management/agent-scratchpad/argus-qa-reports/latest.md`
 
 **Workflow Pattern**:
 1. Claude Code completes development work and announces completion
@@ -143,7 +143,7 @@ Core testing principles:
 - **NOTES**: Observations for consideration
 
 **Response Protocol**: 
-1. Read complete `/Users/leemoore/code/liminal-chat/agent-management/agent-scratchpad/argus-qa-reports/latest.md`
+1. Read complete `agent-management/agent-scratchpad/argus-qa-reports/latest.md`
 2. Address all CRITICAL findings first
 3. Respond to CONCERNS with fixes or technical rationale
 4. Acknowledge NOTES and incorporate relevant feedback
