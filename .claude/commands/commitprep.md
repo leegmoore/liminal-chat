@@ -1,12 +1,17 @@
+Move to root dir
+
 Stage all changes
    - Command: `pnpm precommit:stage-all`
    - Stages all changes with git add -A
 
-Format Check (Auto-fix)
-   - Command: `pnpm format:check`
-     - Shows files that need formatting
-   - Command: `pnpm format:fix` (if needed)
-     - Automatically formats staged files
+Temporary File Check (Show warnings)
+   - Command: `pnpm precommit:temp-files`
+   - Flags common temporary/test file patterns
+   - Shows warnings but continues (non-blocking)
+
+Format (Auto-fix)
+   - Command: `pnpm format:fix`
+     - Automatically formats all staged files
    - Command: `pnpm precommit:stage-all`
      - Re-stage any files modified by Prettier
 
@@ -47,11 +52,11 @@ Type Check (Stop on errors)
    - Stop if type errors found
 
 Documentation Generation (Auto-update)
-   - Command: `pnpm --filter liminal-api docs:llm`
-     - Regenerates llms.txt and api-for-claude.md
+   - Command: `pnpm --filter @liminal/convex docs:llm`
+     - Regenerates llms.txt and api-for-claude.md via generate-llms-custom.js and generate-api-for-claude-v2.js
      - Ensures documentation reflects latest code changes
-   - Command: `git add docs/tsdocs/llms.txt docs/tsdocs/api-for-claude.md`
-     - Stage the updated documentation files from repository root
+   - Command: `git add apps/convex/docs/api/* apps/convex/llms-config.json`
+     - Stage the updated documentation files from Convex package
    - Continue even if generation has warnings
 
 Final Summary

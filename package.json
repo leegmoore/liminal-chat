@@ -49,6 +49,7 @@
     "precommit:binary-files": "git diff --cached --name-only | xargs file 2>/dev/null | grep -v \"text\" | grep -v \"empty\" | head -10 || echo \"No unexpected binary files\"",
     "precommit:branch-check": "git branch --show-current | grep -E \"^(main|master)$\" && echo \"WARNING: You are on the main/master branch!\" || echo \"Branch check passed\"",
     "precommit:file-count": "echo \"Files staged: $(git diff --cached --name-only | wc -l)\"",
+    "precommit:temp-files": "git diff --cached --name-only | grep -E \"(^test-.*\\.(js|ts|tsx|jsx)$|\\.tmp$|\\.temp$|\\.bak$|^(scratch|debug|temp)-)\" && echo \"⚠️  WARNING: Temporary/test files detected in commit\" || echo \"No temporary files detected\"",
     "oc:start": "cd apps/opencode && bun run dev /Users/leemoore/code/liminal-chat",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

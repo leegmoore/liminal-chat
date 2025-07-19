@@ -1,31 +1,25 @@
 import { test as base, APIRequestContext } from '@playwright/test';
-import { SystemUserTokenManager } from '../lib/auth/system-user-token-manager';
+import { SystemAuth } from './system-auth';
 
-// Cache token per worker process to avoid repeated authentication
-let cachedToken: string | null = null;
-let tokenManager: SystemUserTokenManager | null = null;
-let tokenExpiry: number | null = null;
+// Cache auth instance per worker process to avoid repeated initialization
+let cachedAuth: SystemAuth | null = null;
 
-async function getOrCreateToken(): Promise<string> {
-  // Initialize token manager if not exists
-  if (!tokenManager) {
-    tokenManager = SystemUserTokenManager.fromEnv();
+async function getOrCreateAuth(): Promise<SystemAuth> {
+  // Initialize auth instance if not exists
+  if (!cachedAuth) {
+    console.log('🔄 Initializing WorkOS system user authentication...');
+    cachedAuth = await SystemAuth.createForTesting();
+
+    const tokenInfo = cachedAuth.getTokenInfo();
+    if (tokenInfo.expiresAt) {
+      console.log(
+        '✅ Auth initialized, token cached until:',
+        new Date(tokenInfo.expiresAt).toISOString(),
+      );
+    }
   }
 
-  // Check if we need a new token (no cache or expired)
-  const now = Date.now();
-  const needsRefresh = !cachedToken || !tokenExpiry || now >= tokenExpiry;
-
-  if (needsRefresh) {
-    console.log('🔄 Refreshing WorkOS system user token...');
-    cachedToken = await tokenManager.getValidToken();
-
-    // Cache for 50 minutes to align with SystemUserTokenManager
-    tokenExpiry = now + 50 * 60 * 1000;
-    console.log('✅ Token cached until:', new Date(tokenExpiry).toISOString());
-  }
-
-  return cachedToken!;
+  return cachedAuth;
 }
 
 // Create authenticated request fixture
@@ -33,7 +27,7 @@ export const test = base.extend<{
   authenticatedRequest: APIRequestContext;
 }>({
   authenticatedRequest: async ({ request }, use) => {
-    const token = await getOrCreateToken();
+    const auth = await getOrCreateAuth();
 
     // Create proxy that adds auth header to all requests
     const authenticatedRequest = new Proxy(request, {
@@ -44,16 +38,14 @@ export const test = base.extend<{
           typeof original === 'function' &&
           ['get', 'post', 'put', 'patch', 'delete', 'head'].includes(prop as string)
         ) {
-          return function (url: string, options: any = {}) {
+          return async function (url: string, options: any = {}) {
+            // Get fresh auth headers (handles token refresh automatically)
+            const authHeaders = await auth.getAuthHeaders();
+
             const headers: Record<string, string> = {
               ...options.headers,
-              Authorization: `Bearer ${token}`,
+              ...authHeaders,
             };
-
-            // Add Content-Type for data-sending methods if not already set
-            if (['post', 'put', 'patch'].includes(prop as string) && !headers['Content-Type']) {
-              headers['Content-Type'] = 'application/json';
-            }
 
             return (original as any).call(target, url, {
               ...options,

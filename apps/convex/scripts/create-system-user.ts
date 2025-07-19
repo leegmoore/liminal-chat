@@ -139,7 +139,7 @@ async function createSystemUser(config: CreateSystemUserConfig) {
     console.log('1. Configure JWT Template in WorkOS Dashboard:');
     console.log('   - Go to Authentication → JWT Template');
     console.log('   - Add custom claims for system user identification');
-    console.log('2. Update your test framework to use the SystemUserTokenManager');
+    console.log('2. Update your test framework to use the SystemAuth utility from test-utils/');
   } catch (error) {
     console.error('❌ Failed to create system user:', error);
     process.exit(1);

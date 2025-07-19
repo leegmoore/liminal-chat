@@ -55,7 +55,7 @@ This script will:
 
 ```json
 {
-  "system_user": "{{ user.metadata.purpose == 'integration_testing' }}",
+  "system_user": "{{ user.metadata.purpose }}",
   "test_context": "{{ user.metadata.environment }}",
   "permissions": ["api_access", "test_operations"],
   "environment": "{{ user.metadata.environment }}"
@@ -64,14 +64,14 @@ This script will:
 
 ### 4. Update Test Configuration
 
-The test framework will automatically use the SystemAuthHelper for authenticated requests:
+The test framework will automatically use the SystemAuth utility for authenticated requests:
 
 ```typescript
-import { getSystemAuthHelper } from '../lib/test/system-auth-helper';
+import { getSystemAuth } from '../test-utils/system-auth';
 
 // In your test files
-const authHelper = await getSystemAuthHelper();
-const response = await authHelper.get('/api/your-endpoint');
+const auth = await getSystemAuth();
+const response = await auth.get('/api/your-endpoint');
 ```
 
 ## Usage in Tests
@@ -79,13 +79,13 @@ const response = await authHelper.get('/api/your-endpoint');
 ### Basic Authentication
 
 ```typescript
-import { getSystemAuthHelper } from '../lib/test/system-auth-helper';
+import { getSystemAuth } from '../test-utils/system-auth';
 
 test('authenticated endpoint access', async () => {
-  const authHelper = await getSystemAuthHelper();
+  const auth = await getSystemAuth();
 
   // Make authenticated requests
-  const response = await authHelper.get('/api/health');
+  const response = await auth.get('/api/health');
   expect(response.status).toBe(200);
 });
 ```
@@ -94,11 +94,11 @@ test('authenticated endpoint access', async () => {
 
 ```typescript
 test('system user token validation', async () => {
-  const authHelper = await getSystemAuthHelper();
+  const auth = await getSystemAuth();
 
   // Verify token claims
-  const claims = await authHelper.getTokenClaims();
-  expect(claims.system_user).toBe(true);
+  const claims = await auth.getTokenClaims();
+  expect(claims.system_user).toBe('integration_testing');
   expect(claims.environment).toBe('development');
 });
 ```
@@ -107,9 +107,9 @@ test('system user token validation', async () => {
 
 ```typescript
 test('custom authenticated request', async () => {
-  const authHelper = await getSystemAuthHelper();
+  const auth = await getSystemAuth();
 
-  const response = await authHelper.authenticatedFetch('/api/custom', {
+  const response = await auth.authenticatedFetch('/api/custom', {
     method: 'POST',
     body: JSON.stringify({ data: 'test' }),
     headers: {
@@ -132,7 +132,7 @@ test('custom authenticated request', async () => {
 If `system_user` claim is not present:
 
 1. Update JWT template to include the custom claims
-2. Refresh the token: `await authHelper.refreshToken()`
+2. Refresh the token: `await auth.forceRefresh()`
 3. Verify user metadata in WorkOS dashboard
 
 ### Integration Test Failures

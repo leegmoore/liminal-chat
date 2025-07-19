@@ -112,7 +112,7 @@
  * ```
  *
  * This creates a WorkOS user with system metadata for integration testing.
- * See `lib/auth/system-user-token-manager.ts` for test token management utilities.
+ * See `test-utils/system-auth.ts` for test token management utilities.
  *
  * ## Security Notes
  *

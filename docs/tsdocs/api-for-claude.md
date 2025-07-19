@@ -228,14 +228,23 @@ Configuration error with helpful instructions.
 
 #### auth.ts
 
-**`validateWorkOSToken`** (action) - convex/node/auth.ts:82  
+**`validateWorkOSToken`** (action) - convex/node/auth.ts:245  
 Validates a WorkOS JWT token and returns user information  
+Args: - JWT token string  
+Returns: AuthenticatedUser | null  
 
-**`requireAuth`** (action) - convex/node/auth.ts:95  
+**`requireAuth`** (action) - convex/node/auth.ts:277  
 Validates authorization header and returns authenticated user  
+Args: - Authorization header (optional)  
+Returns: AuthenticatedUser  
+Throws: Error if authentication fails  
 
-**`optionalAuth`** (action) - convex/node/auth.ts:124  
+**`optionalAuth`** (action) - convex/node/auth.ts:321  
 Optional authentication - returns null if no auth header provided  
+Args: - Authorization header (optional)  
+Returns: AuthenticatedUser | null  
+
+Interfaces: `AuthenticatedUser`  
 
 #### chat.ts
 
@@ -257,48 +266,6 @@ Internal mutation to validate environment configuration at startup
 
 **`checkEnvironmentHealth`** (internalMutation) - convex/node/startup.ts:49  
 Internal mutation to check environment health  
-
-### lib/auth/
-
-#### middleware.ts
-
-**`requireAuth`** (function) - lib/auth/middleware.ts:9  
-Secure JWT authentication middleware for WorkOS tokens  
-
-**`requireAuthForRequest`** (function) - lib/auth/middleware.ts:39  
-Authentication middleware for Convex HTTP actions (streaming endpoints)  
-
-#### system-user-token-manager.ts
-
-**`systemUserTokenManager`** (function) - lib/auth/system-user-token-manager.ts:178  
-Global singleton instance for integration testing.  
-
-**`SystemUserTokenManager`** (class) - lib/auth/system-user-token-manager.ts:27  
-Manages authentication tokens for a system user in WorkOS.  
-
-#### workos-auth.ts
-
-**`validateWorkOSToken`** (function) - lib/auth/workos-auth.ts:37  
-Validates a WorkOS JWT token and returns user information  
-
-**`extractBearerToken`** (function) - lib/auth/workos-auth.ts:73  
-Extract Bearer token from Authorization header  
-
-**`requireWorkOSAuth`** (function) - lib/auth/workos-auth.ts:83  
-Middleware function to validate WorkOS authentication  
-
-Interfaces: `WorkOSUser`  
-
-### lib/test/
-
-#### system-auth-helper.ts
-
-**`getSystemAuthHelper`** (function) - lib/test/system-auth-helper.ts:210  
-Gets or creates the global SystemAuthHelper instance.  
-Returns: Promise<SystemAuthHelper> Global auth helper  
-
-**`SystemAuthHelper`** (class) - lib/test/system-auth-helper.ts:28  
-Helper class for system user authentication in tests.  
 
 ### lib/utils/
 
