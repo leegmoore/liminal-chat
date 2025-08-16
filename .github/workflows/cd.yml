@@ -1,0 +1,103 @@
+name: CD
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
+      target:
+        description: "What to deploy"
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - api
+          - web
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-api:
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.target != 'web') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main')
+    name: Deploy Convex API
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ inputs.environment || 'staging' }}
+    env:
+      # Provided per-environment via GitHub Environments (Secrets/Variables)
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      CONVEX_DEPLOYMENT: ${{ vars.CONVEX_DEPLOYMENT }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Convex types
+        working-directory: apps/liminal-api
+        run: pnpm exec convex codegen
+
+      - name: Deploy Convex
+        working-directory: apps/liminal-api
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            pnpm exec convex deploy --prod
+          else
+            pnpm exec convex deploy
+          fi
+
+  deploy-web:
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.target != 'api') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main')
+    name: Deploy Web (Vercel)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ inputs.environment || 'staging' }}
+    # No explicit dependency; both can run independently
+    env:
+      # Public build-time env for Next.js
+      NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: apps/web
+          vercel-args: ${{ inputs.environment == 'production' && '--prod' || '' }}
+        env:
+          NEXT_PUBLIC_CONVEX_URL: ${{ vars.NEXT_PUBLIC_CONVEX_URL }}
+
+
